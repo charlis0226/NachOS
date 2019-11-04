@@ -21,6 +21,7 @@
 #include "switch.h"
 #include "synch.h"
 #include "sysdep.h"
+#include "alarm.h"
 
 // this is put at the top of the execution stack, for detecting stack overflows
 const int STACK_FENCEPOST = 0xdedbeef;
@@ -212,8 +213,20 @@ Thread::Yield ()
     
     nextThread = kernel->scheduler->FindNextToRun();
     if (nextThread != NULL) {
+	if(kernel->scheduler->getSchedulerType() == SRTF)
+	{
 	kernel->scheduler->ReadyToRun(this);
 	kernel->scheduler->Run(nextThread, FALSE);
+	}
+	else
+	{
+	kernel->scheduler->ReadyToRun(nextThread);
+	}
+    }
+    else
+    {
+	kernel->scheduler->ReadyToRun(this);
+	kernel->scheduler->Run(nextThread,FALSE);
     }
     (void) kernel->interrupt->SetLevel(oldLevel);
 }
@@ -410,14 +423,42 @@ Thread::RestoreUserState()
 //----------------------------------------------------------------------
 
 static void
-SimpleThread(int which)
+SimpleThread()
 {
-    int num;
-    
-    for (num = 0; num < 5; num++) {
-	cout << "*** thread " << which << " looped " << num << " times\n";
-        kernel->currentThread->Yield();
+    Thread *thread = kernel->currentThread;
+    while (thread->getBurstTime() > 0) {
+        thread->setBurstTime(thread->getBurstTime() - 1);
+	printf("%s: %d\n", kernel->currentThread->getName(), kernel->currentThread->getBurstTime());
+        //kernel->currentThread->Yield();
+	kernel->interrupt->OneTick();
+    }    
+}
+
+void
+threadBody() {
+    Thread *thread = kernel->currentThread;
+    while (thread->getBurstTime() > 0) {
+        thread->setBurstTime(thread->getBurstTime() - 1);
+        kernel->interrupt->OneTick();
+        printf("%s: remaining %d\n", kernel->currentThread->getName(), kernel->currentThread->getBurstTime());
     }
+}
+void
+Thread::SchedulingTest()
+{
+    const int thread_num = 4;
+    char *name[thread_num] = {"A", "B", "C", "D"};
+    int thread_priority[thread_num] = {5, 1, 3, 2};
+    int thread_burst[thread_num] = {3, 9, 7, 3};
+    
+    Thread *t;
+    for (int i = 0; i < thread_num; i ++) {
+        t = new Thread(name[i]);
+        t->setPriority(thread_priority[i]);
+        t->setBurstTime(thread_burst[i]);
+        t->Fork((VoidFunctionPtr) threadBody, (void *)NULL);
+    }
+    kernel->currentThread->Yield();
 }
 
 //----------------------------------------------------------------------
@@ -429,11 +470,27 @@ SimpleThread(int which)
 void
 Thread::SelfTest()
 {
+
     DEBUG(dbgThread, "Entering Thread::SelfTest");
+    
+    const int number 	 = 3;
+    char *name[number] 	 = {"A", "B", "C"};
+    int burst[number] 	 = {3, 10, 4};
+    int priority[number] = {4, 5, 3};
+    int start[number]    ={3, 0 , 4};
 
-    Thread *t = new Thread("forked thread");
-
-    t->Fork((VoidFunctionPtr) SimpleThread, (void *) 1);
-    SimpleThread(0);
+    Thread *t;
+    for (int i = 0; i < number; i ++) {
+        t = new Thread(name[i]);
+        t->setPriority(priority[i]);
+        t->setBurstTime(burst[i]);
+        t->Fork((VoidFunctionPtr) SimpleThread, (void *)NULL);
+    
+    if(kernel->scheduler->getSchedulerType() == SRTF)
+    {
+	kernel->alarm->SleepList.PutToSleep(t,start[i]);
+    }
+    }
+    kernel->currentThread->Yield();
 }
 

@@ -45,71 +45,57 @@ Alarm::Alarm(bool doRandom)
 //	nothing on the ready list, and there are no other pending
 //	interrupts.  In this case, we can safely halt.
 //----------------------------------------------------------------------
-
-void 
-Alarm::CallBack() 
-{
+void Alarm::CallBack() {
     Interrupt *interrupt = kernel->interrupt;
     MachineStatus status = interrupt->getStatus();
-    bool woken = WaitList.wakeUp();
-    if (status == IdleMode && !woken && WaitList.isEmpty()) {	// is it time to quit?
+    bool woken = SleepList.PutToReady();
+
+    kernel->currentThread->setPriority(kernel->currentThread->getPriority() - 1);
+
+    if (status == IdleMode && !woken && SleepList.IsEmpty()) {// is it time to quit?
         if (!interrupt->AnyFutureInterrupts()) {
-	    timer->Disable();	// turn off the timer
-	}
-    } else {			// there's someone to preempt
-	interrupt->YieldOnReturn();
+            timer->Disable();   // turn off the timer
+        }
+    } else {                    // there's someone to preempt
+           if(kernel->scheduler->getSchedulerType() == RR ||
+        kernel->scheduler->getSchedulerType() == SRTF ) {	
+        interrupt->YieldOnReturn();
+        }
     }
 }
+void Alarm::WaitUntil(int x) {
+    IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
+    Thread* t = kernel->currentThread;
 
-void Alarm::WaitUntil(int x){
-	IntStatus oldLevel = kernel->interrupt->SetLevel(IntOff);
-	Thread *t = kernel->currentThread;
-	cout << "Thread sleeping......"<<endl;
-	WaitList.insert(t,x);
-	kernel->interrupt->SetLevel(oldLevel);
+    int worktime = kernel->stats->userTicks - t->getStartTime();
+    t->setBurstTime(t->getBurstTime() + worktime);
+    t->setStartTime(kernel->stats->userTicks);
 
+    cout << "Thread Sleeping..." << endl;
+    SleepList.PutToSleep(t, x);
+    kernel->interrupt->SetLevel(oldLevel);
 }
-
-bool waitList::isEmpty(){
-	return waitLists.size() == 0;
-
+bool sleepList::IsEmpty() {
+    return _threadlist.size() == 0;
 }
-void waitList::insert(Thread *t, int x){
-	ASSERT(kernel->interrupt->getLevel()==IntOff);
-	waitLists.push_back(List(t,counter+x));
-	t->Sleep(false);
+void sleepList::PutToSleep(Thread*t, int x) {
+    ASSERT(kernel->interrupt->getLevel() == IntOff);
+    _threadlist.push_back(sleepThread(t, _current_interrupt + x));
+    t->Sleep(false);
 }
-
-bool waitList::wakeUp(){
-	bool woken = false;
-	counter++;
-
-	for(std::list<List>::iterator it = waitLists.begin();it!= waitLists.end();){
-		if(counter>=it->time){
-			woken = true;
-			cout <<"Thread Wake Up...OK"<<endl<<endl;
-			kernel->scheduler->ReadyToRun(it-> thread);
-			it = waitLists.erase(it);
+bool sleepList::PutToReady() {
+    bool woken = false;
+    _current_interrupt ++;
+    for(std::list<sleepThread>::iterator it = _threadlist.begin();
+        it != _threadlist.end(); ) {
+        if(_current_interrupt >= it->when) {
+            woken = true;
+            cout << "PutToReady..." << endl;
+            kernel->scheduler->ReadyToRun(it->sleeper);
+            it = _threadlist.erase(it);
+        } else {
+            it++;
+        }
+    }
+    return woken;
 }
-	else { it++;}
-}
-return woken;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

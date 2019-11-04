@@ -24,6 +24,26 @@
 #include "main.h"
 
 //----------------------------------------------------------------------
+// Compare function
+//----------------------------------------------------------------------
+int PriorityCompare(Thread *a, Thread *b) {
+   cout<<"Scheduler: SRTF" << endl;
+    if(a->getPriority() == b->getPriority())
+        return 0;
+    return a->getPriority() > b->getPriority() ? 1 : -1;
+}
+int SJFCompare(Thread *a, Thread *b) {
+   cout<<"Scheduler: SJF" << endl;
+    if(a->getBurstTime() == b->getBurstTime())
+        return 0;
+    return a->getBurstTime() > b->getBurstTime() ? 1 : -1;
+}
+
+int FCFSCompare(Thread *a, Thread *b) {
+   cout<<"Scheduler: FCFS" << endl;
+    return 1;
+}
+//----------------------------------------------------------------------
 // Scheduler::Scheduler
 // 	Initialize the list of ready but not running threads.
 //	Initially, no ready threads.
@@ -31,8 +51,31 @@
 
 Scheduler::Scheduler()
 {
-//	schedulerType = type;
-	readyList = new List<Thread *>; 
+	Scheduler(RR);
+}
+
+Scheduler::Scheduler(SchedulerType type)
+{
+	schedulerType = type;
+	switch(schedulerType) {
+    	case RR:
+        	readyList = new List<Thread *>;
+        	break;
+    	case SJF:
+		/* todo */
+ 	        readyList = new SortedList<Thread *>(SJFCompare);
+        	break;
+    	case Priority:
+		readyList = new SortedList<Thread *>(PriorityCompare);
+        	break;
+    	case FCFS:
+		/* todo */
+		 readyList = new SortedList<Thread *>(FCFSCompare);
+		break;
+	case SRTF:
+		readyList = new SortedList<Thread *>(SJFCompare);
+        	break;
+   	}
 	toBeDestroyed = NULL;
 } 
 
@@ -59,7 +102,7 @@ Scheduler::ReadyToRun (Thread *thread)
 {
     ASSERT(kernel->interrupt->getLevel() == IntOff);
     DEBUG(dbgThread, "Putting thread on ready list: " << thread->getName());
-
+    
     thread->setStatus(READY);
     readyList->Append(thread);
 }
