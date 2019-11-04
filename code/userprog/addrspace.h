@@ -42,6 +42,9 @@ class AddrSpace {
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
 
+    static int  NumFree;
+    static bool PhyPageStatus[NumPhysPages];
+
 };
 
 #endif // ADDRSPACE_H

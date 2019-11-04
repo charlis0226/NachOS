@@ -42,6 +42,8 @@ class UserProgKernel : public ThreadedKernel {
 	Thread* t[10];
 	char*	execfile[10];
 	int	execfileNum;
+	int burstTime[10] = {0};
+	int priority[10] = {0};
 };
 
 #endif //USERKERNEL_H

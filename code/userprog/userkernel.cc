@@ -29,6 +29,12 @@ UserProgKernel::UserProgKernel(int argc, char **argv)
 	else if (strcmp(argv[i], "-e") == 0) {
 		execfile[++execfileNum]= argv[++i];
 	}
+	else if(strcmp(argv[i], "-burst") == 0){
+		burstTime[execfileNum] = atoi(argv[++i]);
+	}
+	else if(strcmp(argv[i], "-prio") == 0){
+		priority[execfileNum] = atoi(argv[++i]);
+	}
     	 else if (strcmp(argv[i], "-u") == 0) {
 		cout << "===========The following argument is defined in userkernel.cc" << endl;
 		cout << "Partial usage: nachos [-s]\n";
@@ -96,6 +102,8 @@ UserProgKernel::Run()
 	for (int n=1;n<=execfileNum;n++)
 		{
 		t[n] = new Thread(execfile[n]);
+		t[n]->setBurstTime(burstTime[n]);
+		t[n]->setPriority(priority[n]);
 		t[n]->space = new AddrSpace();
 		t[n]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[n]);
 		cout << "Thread " << execfile[n] << " is executing." << endl;
