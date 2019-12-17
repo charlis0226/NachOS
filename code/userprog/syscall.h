@@ -30,7 +30,7 @@
 #define SC_ThreadFork	9
 #define SC_ThreadYield	10
 #define SC_PrintInt	11
-#define SC_Sleep  	12
+#define SC_Sleep	12 // new id -> system call: sleep
 
 #ifndef IN_ASM
 
@@ -126,11 +126,13 @@ void ThreadFork(void (*func)());
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void ThreadYield();	
-
-void Sleep(int number);	
+void ThreadYield();		
 
 void PrintInt(int number);	//my System Call
+
+void Sleep(int number);	// sleep system call function
+
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */
+

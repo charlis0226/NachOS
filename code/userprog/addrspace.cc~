@@ -119,10 +119,9 @@ AddrSpace::Load(char *fileName)
 			+ UserStackSize;	// we need to increase the size
 						// to leave room for the stack
     numPages = divRoundUp(size, PageSize);
-
+//	cout << "number of pages of " << fileName<< " is "<<numPages<<endl;
 	size = numPages * PageSize;
 	pageTable = new TranslationEntry[numPages];  // create virtual page
-//	cout << "number of pages of " << fileName<< " is "<<numPages<<endl;
 	// check we're not trying to run anything too big at least until we have virtual memory
 //    ASSERT(numPages <= NumFreePage);		
 	// implement allocate
@@ -149,6 +148,9 @@ AddrSpace::Load(char *fileName)
 
 // then, copy in the code and data segments into memory
 	if (noffH.code.size > 0) {
+//  	DEBUG(dbgAddr, "Initializing code segment.");
+//		DEBUG(dbgAddr, noffH.code.virtualAddr << ", " << noffH.code.size);
+
 		for(unsigned int i = 0, j = 0; i < numPages; i++)
 		{
 			j = 0;
@@ -188,9 +190,13 @@ AddrSpace::Load(char *fileName)
 		}
     }
 	if (noffH.initData.size > 0) {
+//      DEBUG(dbgAddr, "Initializing data segment.");
+//		DEBUG(dbgAddr, noffH.initData.virtualAddr << ", " << noffH.initData.size);
         executable->ReadAt(
 			&(kernel->machine->mainMemory[noffH.initData.virtualAddr]),
 			noffH.initData.size, noffH.initData.inFileAddr);
+//		&(kernel->machine->mainMemory[pageTable[noffH.initData.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]),
+//			noffH.initData.size, noffH.initData.inFileAddr);
     }
 
     delete executable;		// close file

@@ -17,6 +17,11 @@
 #include "machine.h"
 #include "synchdisk.h"
 
+enum PageReplacementMode {
+	FIFO,
+	LRU
+};
+
 class SynchDisk;
 class UserProgKernel : public ThreadedKernel {
   public:

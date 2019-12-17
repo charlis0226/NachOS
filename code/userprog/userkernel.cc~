@@ -68,7 +68,7 @@ UserProgKernel::Initialize()
 {
     ThreadedKernel::Initialize();	// init multithreading
 
-    machine = new Machine(debugUserProg, mode);
+    machine = new Machine(debugUserProg);
     fileSystem = new FileSystem();
     vm_Disk = new SynchDisk("New Disk");
 #ifdef FILESYS
