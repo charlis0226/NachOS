@@ -27,7 +27,10 @@
 // In addition, there are some extra bits for access control (valid and 
 // read-only) and some bits for usage information (use and dirty).
 
-
+enum ReplaceType {
+	FIFO,
+	LRU
+};
 
 class TranslationEntry {	// page table
   public:

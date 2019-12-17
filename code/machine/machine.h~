@@ -139,7 +139,7 @@ class Machine {
     unsigned int pageTableSize;
     bool ReadMem(int addr, int size, int* value);
 
-    bool usedPhyPage[NumPhysPages] = {0};	// record which page in the main memory is used
+    bool usedPhyPage[NumPhysPages] = {0};		// record which the page in the main memory is used
 	bool usedVirPage[NumPhysPages] = {0};
 	int fifo = 0;
 	std::vector<int> LRUstack;

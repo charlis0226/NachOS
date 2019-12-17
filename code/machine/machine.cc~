@@ -55,6 +55,7 @@ void CheckEndian()
 Machine::Machine(bool debug, PageReplacementMode m)
 {
     int i;
+
 	mode = m;
 
     for (i = 0; i < NumTotalRegs; i++)

@@ -307,7 +307,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 		if(LRUstack[x]==entry->physicalPage)
 		{
 			LRUstack.erase(LRUstack.begin()+x);
-			LRUstack.push_back(entry->physicalPage);
+			LRUstack.push_back(x);
 			break;
 		}
 	}
