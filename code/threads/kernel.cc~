@@ -26,6 +26,7 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
 {
     randomSlice = FALSE; 
     type = RR;
+	//page_type = FIFO;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-rs") == 0) {
@@ -37,6 +38,10 @@ ThreadedKernel::ThreadedKernel(int argc, char **argv)
         }
 		else if (strcmp(argv[i], "-u") == 0) {
             cout << "Partial usage: nachos [-rs randomSeed]\n";
+		/*} else if (strcmp(argv[i], "-FIFO") == 0) {
+            	page_type = FIFO;
+    	} else if (strcmp(argv[i], "-LRU") == 0) {
+		        page_type = LRU;*/
 		} else if (strcmp(argv[i], "-FCFS") == 0) {
             	type = FCFS;
     	} else if (strcmp(argv[i], "-SJF") == 0) {

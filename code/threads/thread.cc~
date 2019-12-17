@@ -456,7 +456,7 @@ Thread::SelfTest()
     char *name[number] 	 = {"A", "B", "C"};
     int burst[number] 	 = {3, 10, 4};
     int priority[number] = {4, 5, 3};
-    int start[number]	 = {3, 0, 4};
+    int start[number]	 = {2, 0, 5};
 
     Thread *t;
     for (int i = 0; i < number; i ++) {

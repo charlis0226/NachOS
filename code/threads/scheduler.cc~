@@ -72,6 +72,7 @@ Scheduler::Scheduler(SchedulerType type)
 	case RR:
         	readyList = new List<Thread *>;
         	break;
+    	
    	}
 	toBeDestroyed = NULL;
 } 
